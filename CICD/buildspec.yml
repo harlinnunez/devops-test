@@ -48,12 +48,12 @@ stages:
 
     # 🏷️ Tag image
     - script: |
-        docker tag $(IMAGE_NAME):v1 $(DOCKER_USER)/$(IMAGE_NAME):v1
+        docker tag $(IMAGE_NAME):v1 $(DOCKER_ID)/$(IMAGE_NAME):v1
       displayName: Tag image
 
     # 🚀 Push
     - script: |
-        docker push $(DOCKER_USER)/$(IMAGE_NAME):v1
+        docker push $(DOCKER_ID)/$(IMAGE_NAME):v1
       displayName: Push image
 
 # 🔹 3. Scripts requeridos
