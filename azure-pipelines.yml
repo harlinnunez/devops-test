@@ -11,38 +11,12 @@ variables:
   dockerfilePath: 'app/nginx-nodejs-redis/web/Dockerfile'
   tag: '$(Build.BuildId)'
   imagePullSecret: 'acr-auth-secret'
-  # 💡 Reemplaza con la IP que obtengas del LoadBalancer de SonarQube
-  sonarUrl: 'http://<TU_IP_PUBLICA_AKS>:9000' 
 
 stages:
 
-# 🛠️ STAGE NUEVO: Instalación/Configuración de SonarQube en AKS
-- stage: Setup_Sonar
-  displayName: Setup SonarQube on AKS
-  jobs:
-  - job: InstallSonar
-    steps:
-    - script: |
-        # 1. Añadir repo de Helm y actualizar
-        helm repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube
-        helm repo update
-
-        # 2. Instalar SonarQube si no existe (Namespace: sonarqube)
-        # Usamos --set service.type=LoadBalancer para obtener la IP pública
-        helm upgrade --install sonarqube sonarqube/sonarqube \
-          --namespace sonarqube \
-          --create-namespace \
-          --set service.type=LoadBalancer \
-          --wait
-          
-        # 3. Obtener la IP (informativo)
-        kubectl get svc -n sonarqube
-      displayName: 'Install SonarQube via Helm'
-
-# 🔹 1. SonarQube Analysis
+# 🔹 1. SonarQube
 - stage: Sonar
   displayName: Static Code Analysis
-  dependsOn: Setup_Sonar
   jobs:
   - job: SonarJob
     steps:
@@ -52,12 +26,12 @@ stages:
         npx sonar-scanner \
           -Dsonar.projectKey=$(imageRepository) \
           -Dsonar.sources=. \
-          -Dsonar.host.url=$(sonarUrl) \
+          -Dsonar.host.url=http://${EXTERNAL_IP}:9000 \
           -Dsonar.login=$(SONAR_TOKEN)
       workingDirectory: app/nginx-nodejs-redis/web
       displayName: 'Run SonarQube Analysis'
 
-# 🔹 2. Build & Push
+# 🔹 2. Build & Push (Formato Azure DevOps)
 - stage: Build
   displayName: Build and Push
   dependsOn: Sonar
@@ -65,6 +39,7 @@ stages:
   - job: BuildJob
     steps:
     - checkout: self
+
     - task: Docker@2
       displayName: Build and Push to ACR
       inputs:
@@ -76,12 +51,13 @@ stages:
           $(tag)
           v1
 
+    # Publicamos los manifiestos que están en infra/k8s/yaml
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: 'infra/k8s/yaml'
         artifact: 'manifests'
 
-# 🔹 3. Scripts Requeridos
+# 🔹 3. Scripts Requeridos (Jobs en paralelo)
 - stage: Scripts
   displayName: Maintenance Scripts
   dependsOn: Build
@@ -101,7 +77,7 @@ stages:
         cat file_*.txt
       displayName: 'Generate and Read Files'
 
-# 🔹 4. Deploy
+# 🔹 4. Deploy (Formato Deployment Job)
 - stage: Deploy
   displayName: Deploy to AKS/K8s
   dependsOn: 
@@ -109,14 +85,16 @@ stages:
   - Scripts
   jobs:
   - deployment: DeployJob
-    environment: 'aks-prod'
+    environment: 'aks-prod' # Recuerda crear este environment en Azure DevOps
     strategy:
       runOnce:
         deploy:
           steps:
+          # Descargamos los YAML publicados en el stage de Build
           - download: current
             artifact: manifests
 
+          # 🔐 Crear secret para el ACR (necesario en K8s para jalar la imagen)
           - task: KubernetesManifest@0
             displayName: Create Image Pull Secret
             inputs:
@@ -125,6 +103,7 @@ stages:
               dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
               namespace: default
 
+          # 🚀 Deploy usando los manifiestos descargados
           - task: KubernetesManifest@0
             displayName: Deploy to Cluster
             inputs:
@@ -137,6 +116,7 @@ stages:
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
 
+          # 🔍 Verificar (Script manual como en tu segundo ejemplo)
           - script: |
               kubectl get pods
               kubectl get svc
