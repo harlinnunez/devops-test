@@ -100,6 +100,7 @@ stages:
             inputs:
               action: createSecret
               secretName: $(imagePullSecret)
+              kubernetesServiceConnection: 'aks-service-connection'
               dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
               namespace: default
 
@@ -108,6 +109,7 @@ stages:
             displayName: Deploy to Cluster
             inputs:
               action: deploy
+              kubernetesServiceConnection: 'aks-service-connection'
               namespace: default
               manifests: |
                 $(Pipeline.Workspace)/manifests/*.yml
