@@ -26,7 +26,7 @@ stages:
         npx sonar-scanner \
           -Dsonar.projectKey=$(imageRepository) \
           -Dsonar.sources=. \
-          -Dsonar.host.url=http://${EXTERNAL_IP}:9000 \
+          -Dsonar.host.url=http://$(EXTERNAL_IP):9000 \
           -Dsonar.login=$(SONAR_TOKEN)
       workingDirectory: app/nginx-nodejs-redis/web
       displayName: 'Run SonarQube Analysis'
