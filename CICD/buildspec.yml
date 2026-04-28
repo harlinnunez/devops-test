@@ -37,6 +37,7 @@ stages:
 
     - script: |
         docker build -t $(IMAGE_NAME):v1 .
+      workingDirectory: app/nginx-nodejs-redis/web
       displayName: Build image
 
 # 🔹 3. Scripts requeridos
