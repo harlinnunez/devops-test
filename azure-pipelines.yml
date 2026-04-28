@@ -57,7 +57,7 @@ stages:
     pool:
       vmImage: $(vmImageName)
 
-    environment: 'aks-prod.default'
+    environment: 'aks-prod'
 
     strategy:
       runOnce:
