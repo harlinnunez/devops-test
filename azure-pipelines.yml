@@ -112,7 +112,7 @@ stages:
               kubernetesServiceConnection: 'aks-service-connection'
               namespace: default
               manifests: |
-                $(Pipeline.Workspace)/manifests/*.yml
+                $(Pipeline.Workspace)/manifests/*.yaml
               imagePullSecrets: |
                 $(imagePullSecret)
               containers: |
