@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: harlinnunezdevopstest 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: harlinnunezdevopstest
+  template:
+    metadata:
+      labels:
+        app: harlinnunezdevopstest 
+    spec:
+      containers:
+        - name: harlinnunezdevopstest 
+          image: demoacrdevops1.azurecr.io/harlinnunezdevopstest
+          ports:
+          - containerPort: 80
