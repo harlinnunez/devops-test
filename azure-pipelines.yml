@@ -31,11 +31,6 @@ stages:
       workingDirectory: app/nginx-nodejs-redis/web
       displayName: 'Run SonarQube Analysis'
 
-    - task: SonarQubePublish@5
-      displayName: 'Publish Quality Gate Result'
-      inputs:
-        pollingTimeoutSec: '300'
-
 # 🔹 2. Build & Push (Formato Azure DevOps)
 - stage: Build
   displayName: Build and Push
