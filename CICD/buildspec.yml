@@ -60,11 +60,23 @@ stages:
 
 # 🔹 4. Deploy (Kubernetes local)
 - stage: Deploy
+  displayName: Deploy to Kubernetes
+  dependsOn: Build
   jobs:
   - job: deploy
     steps:
+
     - checkout: self
 
+    # ☸️ Apply Kubernetes YAML
     - script: |
-        kubectl apply -f k8s/base/
-      displayName: Deploy to Kubernetes
+        echo "Deploying to Kubernetes..."
+        kubectl apply -f infra/k8s/yaml/
+      displayName: "Deploy Kubernetes manifests"
+
+    # 🔍 Verify
+    - script: |
+        kubectl get pods
+        kubectl get svc
+        kubectl get ingress
+      displayName: "Verify deployment"
