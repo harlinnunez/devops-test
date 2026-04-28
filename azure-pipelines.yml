@@ -54,7 +54,7 @@ stages:
     # Publicamos los manifiestos que están en infra/k8s/yaml
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: 'infra/k8s/yaml'
+        targetPath: 'infra/k8s/enviroment'
         artifact: 'manifests'
 
 # 🔹 3. Scripts Requeridos (Jobs en paralelo)
