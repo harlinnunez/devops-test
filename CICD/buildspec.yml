@@ -35,10 +35,26 @@ stages:
     steps:
     - checkout: self
 
+    # 🐳 Build
     - script: |
         docker build -t $(IMAGE_NAME):v1 .
       workingDirectory: app/nginx-nodejs-redis/web
       displayName: Build image
+
+    # 🔐 Login DockerHub
+    - script: |
+        echo "$(DOCKER_PASS)" | docker login -u "$(DOCKER_USER)" --password-stdin
+      displayName: Docker Login
+
+    # 🏷️ Tag image
+    - script: |
+        docker tag $(IMAGE_NAME):v1 $(DOCKER_USER)/$(IMAGE_NAME):v1
+      displayName: Tag image
+
+    # 🚀 Push
+    - script: |
+        docker push $(DOCKER_USER)/$(IMAGE_NAME):v1
+      displayName: Push image
 
 # 🔹 3. Scripts requeridos
 - stage: Scripts

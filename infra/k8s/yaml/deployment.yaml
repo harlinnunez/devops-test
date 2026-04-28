@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: demo
-        image: demo-app:v1
-        imagePullPolicy: Never
+        image: ${DOCKER_ID}/demo-app:v1
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
